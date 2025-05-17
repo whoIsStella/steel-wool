@@ -1,0 +1,19 @@
+////////////////////////
+// Add to package.json manually:
+////////////////////////
+// "main": "main.js",
+// "scripts": {
+//   "start": "electron .",
+//   "build": "electron-builder"
+// },
+// "build": {
+//   "appId": "com.veil.privacy",
+//   "productName": "Veil",
+//   "directories": {
+//     "output": "dist"
+//   },
+//   "files": ["**/*"],
+//   "mac": { "target": "dmg" },
+//   "win": { "target": "nsis" },
+//   "linux": { "target": "AppImage" }
+// }
