@@ -1,0 +1,24 @@
+"main": "main.js",
+"build": {
+  "appId": "com.veil.privacy",
+  "productName": "Veil",
+  "directories": {
+    "output": "dist"
+  },
+  "files": [
+    "**/*"
+  ],
+  "mac": {
+    "target": "dmg"
+  },
+  "win": {
+    "target": "nsis"
+  },
+  "linux": {
+    "target": "AppImage"
+  }
+}
+"scripts": {
+  "start": "electron .",
+  "build": "electron-builder"
+}
