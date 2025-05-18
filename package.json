@@ -1,24 +1,33 @@
-"main": "main.js",
-"build": {
-  "appId": "com.veil.privacy",
-  "productName": "Veil",
-  "directories": {
-    "output": "dist"
+{
+  "name": "veil",
+  "version": "1.0.0",
+  "description": "Veil Privacy Tool",
+  "author": "Stella Parker",
+  "main": "main.js",
+  "scripts": {
+    "start": "xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' npx electron --disable-gpu --no-sandbox .",
+    "build": "electron-builder"
   },
-  "files": [
-    "**/*"
-  ],
-  "mac": {
-    "target": "dmg"
+  "build": {
+    "appId": "com.veil.privacy",
+    "productName": "Veil",
+    "directories": {
+      "output": "dist"
+    },
+    "files": ["**/*"],
+    "publish": null,
+    "mac": { "target": "dmg" },
+    "win": { "target": "nsis" },
+    "linux": { "target": "AppImage" }
   },
-  "win": {
-    "target": "nsis"
+  "dependencies": {
+    "puppeteer": "^22.8.2",
+    "puppeteer-extra": "^3.3.4",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
   },
-  "linux": {
-    "target": "AppImage"
+  "devDependencies": {
+    "electron": "^28.2.0",
+    "electron-builder": "^24.6.0"
   }
 }
-"scripts": {
-  "start": "electron .",
-  "build": "electron-builder"
-}
+
