@@ -24,6 +24,9 @@ Edit
 xvfb-run npm start
 This tricks Electron into thinking a display exists
 
+npm install
+npm run build
+npm start
 
  Linux machine:
 
