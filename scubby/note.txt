@@ -2,18 +2,34 @@
 // Add to package.json manually:
 ////////////////////////
 // "main": "main.js",
-// "scripts": {
+// "scripts": 
 //   "start": "electron .",
 //   "build": "electron-builder"
-// },
-// "build": {
-//   "appId": "com.veil.privacy",
-//   "productName": "Veil",
-//   "directories": {
-//     "output": "dist"
-//   },
-//   "files": ["**/*"],
-//   "mac": { "target": "dmg" },
-//   "win": { "target": "nsis" },
-//   "linux": { "target": "AppImage" }
-// }
+
+
+Use Xvfb (X virtual framebuffer) — a fake display for headless environments
+If you really want to run it in the Codespace or headless server:
+
+Install xvfb:
+
+bash
+Copy
+Edit
+sudo apt update && sudo apt install xvfb
+Start Electron with a virtual display:
+
+bash
+Copy
+Edit
+xvfb-run npm start
+This tricks Electron into thinking a display exists
+
+
+ Linux machine:
+
+bash
+Copy
+Edit
+chmod +x Veil-1.0.0.AppImage
+./Veil-1.0.0.AppImage
+It will launch your fully self-contained Electron app — no install required.
