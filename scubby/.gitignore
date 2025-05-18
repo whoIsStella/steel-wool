@@ -1,4 +1,4 @@
 node_modules
-# prevent built files from being committed
+
 dist/
 *.zip
