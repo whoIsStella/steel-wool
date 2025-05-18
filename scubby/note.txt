@@ -36,3 +36,18 @@ Edit
 chmod +x Veil-1.0.0.AppImage
 ./Veil-1.0.0.AppImage
 It will launch your fully self-contained Electron app — no install required.
+
+
+Linux / macOS (terminal)
+bash
+Copy
+Edit
+zip -r veil.zip dist/
+
+
+Windows:
+
+powershell
+Copy
+Edit
+Compress-Archive -Path .\dist\* -DestinationPath veil.zip
