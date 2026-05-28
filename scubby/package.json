@@ -21,7 +21,7 @@
     "linux": { "target": "AppImage" }
   },
   "dependencies": {
-    "puppeteer": "^22.8.2",
+    "puppeteer": "^25.1.0",
     "puppeteer-extra": "^3.3.4",
     "puppeteer-extra-plugin-stealth": "^2.11.2"
   },
