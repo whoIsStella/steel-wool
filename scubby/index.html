@@ -1,27 +1,56 @@
-// <!DOCTYPE html>
-// <html>
-// <head><title>Veil Privacy App</title></head>
-// <body>
-//   <h1>🕶️ Veil: Privacy Shell</h1>
-//   <nav>
-//     <button onclick="showPanel('main')">Home</button>
-//     <button onclick="showPanel('logs')">Logs</button>
-//     <button onclick="showPanel('plugins')">Plugins</button>
-//   </nav>
-//   <div id="mainPanel">
-//     <button onclick="launchStealth()">Launch Stealth Browser</button>
-//     <button onclick="launchTor()">Launch Tor Browser</button>
-//     <button onclick="startProxy()">Start Proxy Routing</button>
-//     <button onclick="scrubFile()">Scrub Metadata</button>
-//     <button onclick="checkClipboard()">Check Clipboard</button>
-//     <button onclick="toggleVPN()">Toggle VPN</button>
-//     <input type="file" id="fileInput" />
-//   </div>
-//   <div id="logsPanel" style="display:none;"><pre id="logOutput"></pre></div>
-//   <div id="pluginsPanel" style="display:none;">
-//     <label><input type="checkbox" id="pluginClipboard" checked> Clipboard Watch</label><br>
-//     <label><input type="checkbox" id="pluginScrubber" checked> File Scrubber</label>
-//   </div>
-//   <script src="renderer.js"></script>
-// </body>
-// </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Steel Wool</title>
+  <style>
+    :root { font-family: system-ui, sans-serif; color-scheme: dark; }
+    body { max-width: 760px; margin: 0 auto; padding: 2rem; }
+    h1 { margin-bottom: .25rem; }
+    p { line-height: 1.5; }
+    nav, .actions { display: flex; gap: .6rem; flex-wrap: wrap; margin: 1rem 0; }
+    button { padding: .65rem .9rem; cursor: pointer; }
+    .panel { margin-top: 1rem; }
+    #logOutput { min-height: 14rem; white-space: pre-wrap; border: 1px solid #555; padding: 1rem; overflow: auto; }
+    .warning { border-left: 4px solid #888; padding-left: .8rem; }
+  </style>
+</head>
+<body>
+  <h1>Steel Wool</h1>
+  <p>Defensive privacy and network-safety prototype.</p>
+  <p class="warning">Network controls can require elevated privileges. The automatic kill switch is disabled unless explicitly configured.</p>
+
+  <nav>
+    <button onclick="showPanel('main')">Controls</button>
+    <button onclick="showPanel('logs')">Logs</button>
+    <button onclick="showPanel('plugins')">Local checks</button>
+  </nav>
+
+  <section id="mainPanel" class="panel">
+    <div class="actions">
+      <button onclick="launchStealth()">Launch privacy browser</button>
+      <button onclick="launchTor()">Launch Tor-routed browser</button>
+      <button onclick="startProxy()">Start request scrubber</button>
+      <button onclick="startVPN()">Start WireGuard</button>
+      <button onclick="stopVPN()">Stop WireGuard</button>
+    </div>
+    <div class="actions">
+      <input type="file" id="fileInput" />
+      <button onclick="scrubFile()">Scrub image metadata</button>
+      <button onclick="checkClipboard()">Check clipboard</button>
+    </div>
+  </section>
+
+  <section id="logsPanel" class="panel" style="display:none;">
+    <pre id="logOutput"></pre>
+  </section>
+
+  <section id="pluginsPanel" class="panel" style="display:none;">
+    <label><input type="checkbox" id="pluginClipboard" checked /> Clipboard check</label><br />
+    <label><input type="checkbox" id="pluginScrubber" checked /> Image metadata scrubber</label>
+  </section>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
