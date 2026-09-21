@@ -108,10 +108,6 @@ WireGuard and iptables operations use `sudo`. If the host requires an interactiv
 - browser privacy still depends on Chromium, Puppeteer, Tor configuration, and the surrounding host
 - automated verification currently covers syntax and repository hygiene, not end-to-end network behavior
 
-## Repository consolidation
-
-Steel Wool is the canonical repository for this project. `Rubber` was an abandoned bootstrap repository with no implementation beyond repository configuration.
-
 ## Scope
 
 Steel Wool is intended for privacy protection, local data-loss prevention, and defensive network controls on systems the operator owns or is authorized to administer.
