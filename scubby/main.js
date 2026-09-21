@@ -7,6 +7,7 @@ app.disableHardwareAcceleration();
 
 const ROOT = __dirname;
 const PYTHON = process.env.STEEL_WOOL_PYTHON || 'python3';
+const NODE = process.env.STEEL_WOOL_NODE || 'node';
 const KILL_SWITCH_ENABLED = process.env.STEEL_WOOL_ENABLE_KILL_SWITCH === '1';
 const EXPECTED_PUBLIC_IP = (process.env.STEEL_WOOL_EXPECTED_PUBLIC_IP || '').trim();
 const children = new Set();
@@ -57,11 +58,11 @@ function createWindow() {
 }
 
 ipcMain.on('steel-wool:launch-browser', () => {
-  spawnTracked('browser', process.execPath, [path.join(ROOT, 'stealth.js')]);
+  spawnTracked('browser', NODE, [path.join(ROOT, 'stealth.js')]);
 });
 
 ipcMain.on('steel-wool:launch-tor', () => {
-  spawnTracked('tor-browser', process.execPath, [path.join(ROOT, 'tor-stealth.js')]);
+  spawnTracked('tor-browser', NODE, [path.join(ROOT, 'tor-stealth.js')]);
 });
 
 ipcMain.on('steel-wool:start-proxy', () => {
