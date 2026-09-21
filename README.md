@@ -1,59 +1,77 @@
 # Steel Wool
 
-Steel Wool is a defensive privacy and network-safety prototype for reducing accidental data exposure on a workstation. It combines a small Electron control panel with request-header scrubbing, WireGuard controls, an optional network kill switch, local file metadata scrubbing, clipboard checks, and privacy-oriented browser launchers.
+Steel Wool is a defensive privacy and network-safety prototype for reducing accidental data exposure on a workstation.
 
-> **Status:** active prototype / rehab. Steel Wool is not an audited firewall, anonymity system, or production security boundary.
+It combines a small Electron control panel with request-header scrubbing, WireGuard controls, an optional public-IP kill switch, image metadata scrubbing, clipboard checks, and privacy-oriented browser launchers.
 
-## What is here
+> Status: active prototype. Steel Wool is not an audited firewall, anonymity system, or production security boundary.
 
-- **Request sanitization** — a mitmproxy addon removes selected identifying or forwarding headers before requests leave the proxy.
-- **VPN controls** — Linux-oriented WireGuard controls, with an opt-in public-IP monitor that can drop outbound traffic when the expected egress IP changes.
-- **Metadata scrubbing** — local image rewriting for JPEG/PNG files.
-- **Clipboard leak checks** — detects URLs and IPv4-looking strings before clearing them on request.
-- **Browser launchers** — Chromium automation with direct and Tor-proxied modes.
-- **Desktop shell** — Electron UI for launching and observing the components above.
+## Components
+
+- `proxy.py`: mitmproxy addon that removes a small set of identifying or forwarding headers
+- `scrubber.py`: rewrites JPEG and PNG files without carrying metadata forward
+- `stealth.js`: launches a Chromium session with the Puppeteer stealth plugin
+- `tor-stealth.js`: launches Chromium through a local Tor SOCKS proxy
+- Electron control panel for local controls and logs
+- WireGuard start/stop helpers
+- optional public-IP monitoring that can trigger an outbound iptables block
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    UI[Electron control panel]
-    UI --> Browser[Privacy browser launchers]
-    UI --> Proxy[mitmproxy request scrubber]
-    UI --> VPN[WireGuard / kill-switch controls]
-    UI --> Files[Local metadata scrubber]
-    UI --> Clipboard[Clipboard checks]
+```text
+renderer
+   |
+   v
+preload bridge
+   |
+   v
+Electron main process
+   |
+   +--> browser launchers
+   +--> mitmproxy
+   +--> image scrubber
+   +--> clipboard check
+   +--> WireGuard
+   +--> optional kill switch
 ```
 
-The current implementation lives under `scubby/`; that directory name is historical.
+The renderer has no Node integration. Privileged operations stay in the Electron main process and are exposed through a small preload IPC bridge.
 
-## Safety defaults
+Child processes are started with argument arrays rather than shell command strings.
 
-The network kill switch is **disabled by default**. To enable it deliberately, set both:
+## Kill-switch behavior
+
+The kill switch is disabled by default.
+
+To enable it deliberately:
 
 ```bash
 export STEEL_WOOL_ENABLE_KILL_SWITCH=1
 export STEEL_WOOL_EXPECTED_PUBLIC_IP="203.0.113.10"
 ```
 
-If either value is missing, Steel Wool will not change the host firewall policy.
+When enabled, Steel Wool checks the current public IP. If it differs from the configured value, the app requests:
 
-The project currently assumes Linux for WireGuard / iptables-backed network controls. Browser, proxy, and file-scrubbing pieces have different platform requirements.
+```bash
+sudo iptables -P OUTPUT DROP
+```
+
+If either environment variable is missing, Steel Wool does not change the host firewall policy.
 
 ## Run locally
 
-### Requirements
+Requirements:
 
 - Node.js 20+
 - Python 3.11+
 - Chromium
-- `mitmproxy` for request sanitization
+- `mitmproxy` for request scrubbing
 - Pillow for image metadata scrubbing
-- WireGuard and iptables only for the Linux VPN/kill-switch features
-- Tor only for the Tor browser mode
+- WireGuard and iptables for the Linux network controls
+- Tor for the Tor-routed browser mode
 - Xvfb only for headless Electron sessions on Linux
 
-### Setup
+Setup:
 
 ```bash
 cd scubby
@@ -71,28 +89,29 @@ For a headless Linux session:
 npm run start:headless
 ```
 
-## Repository consolidation
+Run syntax checks:
 
-Steel Wool is the canonical repository for this project. The former `Rubber` repository was an abandoned bootstrap/security-scanning shell with no implementation beyond repository configuration. Its useful security-scanning intent is being consolidated here.
+```bash
+npm run check
+python3 -m py_compile proxy.py scrubber.py
+```
+
+## Privileged network controls
+
+WireGuard and iptables operations use `sudo`. If the host requires an interactive sudo prompt that Electron cannot satisfy, those operations will fail and log the error. Steel Wool does not try to bypass the host's privilege policy.
 
 ## Current limitations
 
-- The Electron shell still uses Node integration and needs a proper preload/context-isolation boundary.
-- Network controls require elevated host permissions and have not been audited.
-- The proxy scrubber removes a small fixed header set rather than enforcing a configurable policy.
-- Image scrubbing is intentionally narrow and currently supports JPEG/PNG only.
-- Automated tests are still sparse; CI currently focuses on syntax and static analysis.
+- network controls have not been audited
+- the request scrubber uses a small fixed header policy
+- image scrubbing currently supports JPEG and PNG only
+- browser privacy still depends on Chromium, Puppeteer, Tor configuration, and the surrounding host
+- automated verification currently covers syntax and repository hygiene, not end-to-end network behavior
 
-## Direction
+## Repository consolidation
 
-The rehab is intentionally incremental:
+Steel Wool is the canonical repository for this project. `Rubber` was an abandoned bootstrap repository with no implementation beyond repository configuration.
 
-1. make the existing prototype safe to run and understandable;
-2. restore CI/static analysis and remove dead repository scaffolding;
-3. isolate privileged operations behind a narrow process boundary;
-4. add tests around network-policy and metadata-scrubbing behavior;
-5. document a concrete threat model before calling any component hardened.
-
-## Defensive-use scope
+## Scope
 
 Steel Wool is intended for privacy protection, local data-loss prevention, and defensive network controls on systems the operator owns or is authorized to administer.
