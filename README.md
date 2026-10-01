@@ -1,113 +1,72 @@
 # Steel Wool
 
-Steel Wool is a defensive privacy and network-safety prototype for reducing accidental data exposure on a workstation.
+A defensive privacy and network-safety prototype for a workstation: a small Electron panel for request scrubbing, image metadata removal, WireGuard controls, and separate Chromium launches. The useful part is the boundary between a button in the renderer and a privileged host operation.
 
-It combines a small Electron control panel with request-header scrubbing, WireGuard controls, an optional public-IP kill switch, image metadata scrubbing, clipboard checks, and privacy-oriented browser launchers.
+**Prototype, not an audited firewall or anonymity system.** Automated checks cover syntax, not end-to-end network protection.
 
-> Status: active prototype. Steel Wool is not an audited firewall, anonymity system, or production security boundary.
+## What is implemented
 
-## Components
+- A sandboxed Electron renderer with no Node integration; a narrow preload IPC bridge calls the main process.
+- Child processes launched with argument arrays, not shell strings.
+- A mitmproxy addon that removes four request headers. Traffic must actually be routed through the proxy.
+- JPEG/PNG rewrites through Pillow; this is not proof that every identifying field is removed.
+- WireGuard start/stop controls, a simple clipboard check, and Chromium launchers with an optional local Tor SOCKS proxy.
+- An opt-in public-IP check that can change Linux's outbound firewall policy.
 
-- `proxy.py`: mitmproxy addon that removes a small set of identifying or forwarding headers
-- `scrubber.py`: rewrites JPEG and PNG files without carrying metadata forward
-- `stealth.js`: launches a Chromium session with the Puppeteer stealth plugin
-- `tor-stealth.js`: launches Chromium through a local Tor SOCKS proxy
-- Electron control panel for local controls and logs
-- WireGuard start/stop helpers
-- optional public-IP monitoring that can trigger an outbound iptables block
-
-## Architecture
-
-```text
-renderer
-   |
-   v
-preload bridge
-   |
-   v
-Electron main process
-   |
-   +--> browser launchers
-   +--> mitmproxy
-   +--> image scrubber
-   +--> clipboard check
-   +--> WireGuard
-   +--> optional kill switch
-```
-
-The renderer has no Node integration. Privileged operations stay in the Electron main process and are exposed through a small preload IPC bridge.
-
-Child processes are started with argument arrays rather than shell command strings.
-
-## Kill-switch behavior
-
-The kill switch is disabled by default.
-
-To enable it deliberately:
-
-```bash
-export STEEL_WOOL_ENABLE_KILL_SWITCH=1
-export STEEL_WOOL_EXPECTED_PUBLIC_IP="203.0.113.10"
-```
-
-When enabled, Steel Wool checks the current public IP. If it differs from the configured value, the app requests:
-
-```bash
-sudo iptables -P OUTPUT DROP
-```
-
-If either environment variable is missing, Steel Wool does not change the host firewall policy.
+The panel's renderer sandbox and the launched browser are separate boundaries.
+**The current Puppeteer launchers disable Chromium's sandbox.** A temporary
+browser session does not make browsing anonymous or safely isolated.
 
 ## Run locally
 
-Requirements:
-
-- Node.js 20+
-- Python 3.11+
-- Chromium
-- `mitmproxy` for request scrubbing
-- Pillow for image metadata scrubbing
-- WireGuard and iptables for the Linux network controls
-- Tor for the Tor-routed browser mode
-- Xvfb only for headless Electron sessions on Linux
-
-Setup:
+Requires Node.js 20+, Python 3.11+, and a graphical desktop. WireGuard and
+iptables controls are Linux-specific; Tor mode needs a running local Tor proxy.
 
 ```bash
 cd scubby
 npm install
-
 python3 -m venv .venv
 .venv/bin/pip install mitmproxy pillow
-
+export STEEL_WOOL_PYTHON="$PWD/.venv/bin/python"
+export PATH="$PWD/.venv/bin:$PATH"
 npm start
 ```
 
-For a headless Linux session:
-
-```bash
-npm run start:headless
-```
-
-Run syntax checks:
+The Python interpreter and PATH settings let the Electron subprocesses find the
+dependencies installed in that virtual environment.
 
 ```bash
 npm run check
-python3 -m py_compile proxy.py scrubber.py
+.venv/bin/python -m py_compile proxy.py scrubber.py
 ```
 
-## Privileged network controls
+`npm run start:headless` needs Xvfb and disables Electron's sandbox too.
+It is a headless development shortcut, not the recommended security posture.
 
-WireGuard and iptables operations use `sudo`. If the host requires an interactive sudo prompt that Electron cannot satisfy, those operations will fail and log the error. Steel Wool does not try to bypass the host's privilege policy.
+## Privileged controls
 
-## Current limitations
+WireGuard and iptables use `sudo`; operations fail and log an error if the host
+needs an interactive prompt that Electron cannot provide.
 
-- network controls have not been audited
-- the request scrubber uses a small fixed header policy
-- image scrubbing currently supports JPEG and PNG only
-- browser privacy still depends on Chromium, Puppeteer, Tor configuration, and the surrounding host
-- automated verification currently covers syntax and repository hygiene, not end-to-end network behavior
+The kill switch is **off by default**. Enabling it requires both:
 
-## Scope
+```bash
+export STEEL_WOOL_ENABLE_KILL_SWITCH=1
+export STEEL_WOOL_EXPECTED_PUBLIC_IP="203.0.113.10" # replace with the expected IP
+```
 
-Steel Wool is intended for privacy protection, local data-loss prevention, and defensive network controls on systems the operator owns or is authorized to administer.
+A different observed IP requests `sudo iptables -P OUTPUT DROP`. The app does
+not automatically restore that policy. Failed IP lookups only log an error;
+they do not block traffic. This is polling, not fail-closed leak prevention.
+
+## Read the implementation
+
+[main.js](scubby/main.js) owns host operations;
+[preload.js](scubby/preload.js) defines the renderer's interface.
+[proxy.py](scubby/proxy.py) and [scrubber.py](scubby/scrubber.py) contain the
+small scrubbing policies. Browser launchers are
+[stealth.js](scubby/stealth.js) and [tor-stealth.js](scubby/tor-stealth.js).
+
+No network audit, DNS/leak test suite, cross-platform acceptance, or comprehensive
+metadata-removal guarantee is established. Intended for defensive use on
+machines the operator is authorized to administer.
